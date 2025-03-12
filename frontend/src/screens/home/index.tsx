@@ -1,4 +1,4 @@
-import { ColorSwatch } from "@mantine/core";
+import { ColorSwatch, Loader } from "@mantine/core";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
@@ -25,13 +25,10 @@ export default function Home() {
   const [dictOfVars, setDictOfVars] = useState({});
   const [result, setResult] = useState<GeneratedResult>();
   const [latexPosition, setLatexPosition] = useState({ x: 10, y: 200 });
-  const [latexExpression, setLatexExpression] = useState<Array<string>>([]);
-
-  // const lazyBrush = new LazyBrush({
-  //     radius: 10,
-  //     enabled: true,
-  //     initialPoint: { x: 0, y: 0 },
-  // });
+  const [latexExpression, setLatexExpression] = useState<
+    { expr: string; result: string }[]
+  >([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (latexExpression.length > 0 && window.MathJax) {
@@ -92,7 +89,10 @@ export default function Home() {
   }, []);
 
   const renderLatexToCanvas = (expression: string, answer: string) => {
-    const latex = `\\(\\LARGE{${expression} = ${answer}}\\)`;
+    const latex = {
+      expr: expression,
+      result: answer,
+    };
     setLatexExpression([...latexExpression, latex]);
 
     // Clear the main canvas
@@ -146,61 +146,76 @@ export default function Home() {
   };
 
   const runRoute = async () => {
+    setLoading(true);
     const canvas = canvasRef.current;
 
     if (canvas) {
-      const response = await axios({
-        method: "post",
-        url: `${import.meta.env.VITE_API_URL}/calculate`,
-        data: {
-          image: canvas.toDataURL("image/png"),
-          dict_of_vars: dictOfVars,
-        },
-      });
+      try {
+        const response = await axios.post(
+          `${import.meta.env.VITE_BASE_URL}/calculate`,
+          {
+            image: canvas.toDataURL("image/png"),
+            dict_of_vars: dictOfVars,
+          },
 
-      const resp = await response.data;
-      console.log("Response", resp);
-      resp.data.forEach((data: Response) => {
-        if (data.assign === true) {
-          // dict_of_vars[resp.result] = resp.answer;
-          setDictOfVars({
-            ...dictOfVars,
-            [data.expr]: data.result,
-          });
+          {
+            withCredentials: true,
+          }
+        );
+
+        const resp = await response.data;
+
+        if (resp.data.length === 0) {
+          alert("Improve drawing and retry.");
+          return;
         }
-      });
-      const ctx = canvas.getContext("2d");
-      const imageData = ctx!.getImageData(0, 0, canvas.width, canvas.height);
-      let minX = canvas.width,
-        minY = canvas.height,
-        maxX = 0,
-        maxY = 0;
 
-      for (let y = 0; y < canvas.height; y++) {
-        for (let x = 0; x < canvas.width; x++) {
-          const i = (y * canvas.width + x) * 4;
-          if (imageData.data[i + 3] > 0) {
-            // If pixel is not transparent
-            minX = Math.min(minX, x);
-            minY = Math.min(minY, y);
-            maxX = Math.max(maxX, x);
-            maxY = Math.max(maxY, y);
+        resp.data.forEach((data: Response) => {
+          if (data.assign === true) {
+            setDictOfVars({
+              ...dictOfVars,
+              [data.expr]: data.result,
+            });
+          }
+        });
+        const ctx = canvas.getContext("2d");
+        const imageData = ctx!.getImageData(0, 0, canvas.width, canvas.height);
+        let minX = canvas.width,
+          minY = canvas.height,
+          maxX = 0,
+          maxY = 0;
+
+        for (let y = 0; y < canvas.height; y++) {
+          for (let x = 0; x < canvas.width; x++) {
+            const i = (y * canvas.width + x) * 4;
+            if (imageData.data[i + 3] > 0) {
+              // If pixel is not transparent
+              minX = Math.min(minX, x);
+              minY = Math.min(minY, y);
+              maxX = Math.max(maxX, x);
+              maxY = Math.max(maxY, y);
+            }
           }
         }
+
+        const centerX = (minX + maxX) / 2;
+        const centerY = (minY + maxY) / 2;
+
+        setLatexPosition({ x: centerX, y: centerY });
+        resp.data.forEach((data: Response) => {
+          setTimeout(() => {
+            setResult({
+              expression: data.expr,
+              answer: data.result,
+            });
+          }, 1000);
+        });
+      } catch (error) {
+        console.error("Error during calculation:", error);
+        // Handle error appropriately (e.g., display an error message)
+      } finally {
+        setLoading(false);
       }
-
-      const centerX = (minX + maxX) / 2;
-      const centerY = (minY + maxY) / 2;
-
-      setLatexPosition({ x: centerX, y: centerY });
-      resp.data.forEach((data: Response) => {
-        setTimeout(() => {
-          setResult({
-            expression: data.expr,
-            answer: data.result,
-          });
-        }, 1000);
-      });
     }
   };
 
@@ -239,8 +254,9 @@ export default function Home() {
             onClick={runRoute}
             className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
             variant="default"
+            disabled={loading}
           >
-            Run
+            {loading ? <Loader size="sm" color="white" /> : "Run"}
           </Button>
         </div>
       </div>
@@ -262,8 +278,24 @@ export default function Home() {
             defaultPosition={latexPosition}
             onStop={(_, data) => setLatexPosition({ x: data.x, y: data.y })}
           >
-            <div className="absolute p-2 text-white rounded shadow-md bg-gray-900 bg-opacity-70">
-              <div className="latex-content">{latex}</div>
+            <div className="absolute p-3 rounded-lg shadow-md bg-gray-800 text-white hover:bg-gray-700 transition duration-200 cursor-move">
+              {latex.expr !== undefined && latex.expr !== null && (
+                <div className="flex items-center space-x-2">
+                  <span className="font-medium text-sm text-gray-300">
+                    Expression:
+                  </span>
+                  <div className="text-base font-serif">{latex.expr}</div>
+                </div>
+              )}
+
+              {latex.result !== undefined && latex.result !== null && (
+                <div className="flex items-center space-x-2">
+                  <span className="font-medium text-sm text-gray-300">
+                    Result:
+                  </span>
+                  <div className="text-base font-serif">{latex.result}</div>
+                </div>
+              )}
             </div>
           </Draggable>
         ))}
