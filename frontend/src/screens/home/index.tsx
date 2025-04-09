@@ -1,6 +1,6 @@
 import { ColorSwatch, Loader } from "@mantine/core";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
 import Draggable from "react-draggable";
 import { SWATCHES } from "@/constants";
@@ -29,6 +29,20 @@ export default function Home() {
     { expr: string; result: string }[]
   >([]);
   const [loading, setLoading] = useState(false);
+  const [showColorPalette, setShowColorPalette] = useState(false);
+
+  const resizeCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight - 80;
+        ctx.lineCap = "round";
+        ctx.lineWidth = 3;
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (latexExpression.length > 0 && window.MathJax) {
@@ -57,15 +71,10 @@ export default function Home() {
   useEffect(() => {
     const canvas = canvasRef.current;
 
-    if (canvas) {
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight - canvas.offsetTop;
-        ctx.lineCap = "round";
-        ctx.lineWidth = 3;
-      }
-    }
+    resizeCanvas();
+
+    window.addEventListener("resize", resizeCanvas);
+
     const script = document.createElement("script");
     script.src =
       "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-MML-AM_CHTML";
@@ -85,8 +94,9 @@ export default function Home() {
 
     return () => {
       document.head.removeChild(script);
+      window.removeEventListener("resize", resizeCanvas);
     };
-  }, []);
+  }, [resizeCanvas]);
 
   const renderLatexToCanvas = (expression: string, answer: string) => {
     const latex = {
@@ -95,7 +105,6 @@ export default function Home() {
     };
     setLatexExpression([...latexExpression, latex]);
 
-    // Clear the main canvas
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext("2d");
@@ -115,32 +124,63 @@ export default function Home() {
     }
   };
 
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const startDrawing = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) => {
     const canvas = canvasRef.current;
     if (canvas) {
       canvas.style.background = "black";
       const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.beginPath();
-        ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+
+        const x =
+          "touches" in e
+            ? e.touches[0].clientX - canvas.getBoundingClientRect().left
+            : (e as React.MouseEvent).nativeEvent.offsetX;
+        const y =
+          "touches" in e
+            ? e.touches[0].clientY - canvas.getBoundingClientRect().top
+            : (e as React.MouseEvent).nativeEvent.offsetY;
+
+        ctx.moveTo(x, y);
         setIsDrawing(true);
       }
     }
   };
-  const draw = (e: React.MouseEvent<HTMLCanvasElement>) => {
+
+  const draw = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) => {
     if (!isDrawing) {
       return;
     }
+
+    if ("touches" in e) {
+      e.preventDefault();
+    }
+
     const canvas = canvasRef.current;
     if (canvas) {
       const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.strokeStyle = color;
-        ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+
+        const x =
+          "touches" in e
+            ? e.touches[0].clientX - canvas.getBoundingClientRect().left
+            : (e as React.MouseEvent).nativeEvent.offsetX;
+        const y =
+          "touches" in e
+            ? e.touches[0].clientY - canvas.getBoundingClientRect().top
+            : (e as React.MouseEvent).nativeEvent.offsetY;
+
+        ctx.lineTo(x, y);
         ctx.stroke();
       }
     }
   };
+
   const stopDrawing = () => {
     setIsDrawing(false);
   };
@@ -189,7 +229,6 @@ export default function Home() {
           for (let x = 0; x < canvas.width; x++) {
             const i = (y * canvas.width + x) * 4;
             if (imageData.data[i + 3] > 0) {
-              // If pixel is not transparent
               minX = Math.min(minX, x);
               minY = Math.min(minY, y);
               maxX = Math.max(maxX, x);
@@ -212,7 +251,6 @@ export default function Home() {
         });
       } catch (error) {
         console.error("Error during calculation:", error);
-        // Handle error appropriately (e.g., display an error message)
       } finally {
         setLoading(false);
       }
@@ -221,42 +259,58 @@ export default function Home() {
 
   return (
     <>
-      <div className="fixed top-0 left-0 w-full h-20 bg-gray-900 bg-opacity-70 backdrop-filter backdrop-blur-lg z-30 flex items-center justify-center">
-        <div className="container mx-auto flex items-center justify-between">
+      <div className="fixed top-0 left-0 w-full bg-gray-900 bg-opacity-70 backdrop-filter backdrop-blur-lg z-30 py-3">
+        <div className="container mx-auto px-2 flex flex-wrap items-center justify-between gap-2">
           <Button
             onClick={() => setReset(true)}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
             variant="default"
+            size="sm"
           >
             ♻️ Reset
           </Button>
 
-          <div className="flex items-center space-x-3">
-            {SWATCHES.map((swatch) => (
-              <ColorSwatch
-                key={swatch}
-                color={swatch}
-                onClick={() => setColor(swatch)}
-                style={{
-                  backgroundColor: swatch,
-                  width: "30px",
-                  height: "30px",
-                  borderRadius: "50%",
-                  border: "2px solid white",
-                  cursor: "pointer",
-                }}
-                className="focus:outline-none hover:scale-110 transition-transform"
-              />
-            ))}
+          <div className="flex flex-col items-center">
+            <Button
+              onClick={() => setShowColorPalette(!showColorPalette)}
+              className="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600 mb-1"
+              variant="outline"
+              size="sm"
+            >
+              🎨 Colors {showColorPalette ? "▲" : "▼"}
+            </Button>
+
+            {showColorPalette && (
+              <div className="flex flex-wrap items-center justify-center gap-1 p-1 bg-gray-800 rounded-md max-w-[200px]">
+                {SWATCHES.map((swatch) => (
+                  <ColorSwatch
+                    key={swatch}
+                    color={swatch}
+                    onClick={() => setColor(swatch)}
+                    style={{
+                      backgroundColor: swatch,
+                      width: "24px",
+                      height: "24px",
+                      borderRadius: "50%",
+                      border:
+                        color === swatch ? "2px solid white" : "1px solid gray",
+                      cursor: "pointer",
+                    }}
+                    className="focus:outline-none hover:scale-110 transition-transform"
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           <Button
             onClick={runRoute}
-            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
+            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
             variant="default"
             disabled={loading}
+            size="sm"
           >
-            {loading ? <Loader size="sm" color="white" /> : "Run"}
+            {loading ? <Loader size="xs" color="white" /> : "Run"}
           </Button>
         </div>
       </div>
@@ -264,11 +318,14 @@ export default function Home() {
       <canvas
         ref={canvasRef}
         id="canvas"
-        className="absolute top-0 left-0 w-full h-full bg-black"
+        className="absolute top-0 left-0 w-full h-full bg-black touch-none"
         onMouseDown={startDrawing}
         onMouseMove={draw}
         onMouseUp={stopDrawing}
         onMouseOut={stopDrawing}
+        onTouchStart={startDrawing}
+        onTouchMove={draw}
+        onTouchEnd={stopDrawing}
       />
 
       {latexExpression &&
