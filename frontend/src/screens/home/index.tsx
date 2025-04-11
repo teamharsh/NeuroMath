@@ -260,7 +260,7 @@ export default function Home() {
   return (
     <>
       <div className="fixed top-0 left-0 w-full bg-gray-900 bg-opacity-70 backdrop-filter backdrop-blur-lg z-30 py-3">
-        <div className="container mx-auto px-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="container mx-auto px-2 flex items-center justify-between gap-2">
           <Button
             onClick={() => setReset(true)}
             className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -270,10 +270,10 @@ export default function Home() {
             ♻️ Reset
           </Button>
 
-          <div className="flex flex-col items-center">
+          <div className="relative">
             <Button
               onClick={() => setShowColorPalette(!showColorPalette)}
-              className="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600 mb-1"
+              className="px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-600"
               variant="outline"
               size="sm"
             >
@@ -281,7 +281,7 @@ export default function Home() {
             </Button>
 
             {showColorPalette && (
-              <div className="flex flex-wrap items-center justify-center gap-1 p-1 bg-gray-800 rounded-md max-w-[200px]">
+              <div className="absolute top-full left-0 mt-1 flex flex-wrap items-center justify-center gap-1 p-1 bg-gray-800 rounded-md max-w-[200px] z-50">
                 {SWATCHES.map((swatch) => (
                   <ColorSwatch
                     key={swatch}
