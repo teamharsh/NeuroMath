@@ -356,6 +356,10 @@ export default function Home() {
             </div>
           </Draggable>
         ))}
+
+      <div className="fixed bottom-2 right-2 text-black text-sm bg-white bg-opacity-50 px-2 py-1 rounded z-40 transform-gpu rotate-3d(1, 1, 1, 5deg)">
+        @ HaRsH
+      </div>
     </>
   );
 }
