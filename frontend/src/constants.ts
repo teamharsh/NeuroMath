@@ -12,5 +12,32 @@ const SWATCHES = [
     "#fab005",  // yellow
     "#fd7e14",  // orange
 ];
+
+// Organized color categories for better UX
+const COLOR_CATEGORIES = {
+    grayscale: ["#ffffff", "#cccccc", "#888888", "#444444", "#000000"],
+    warm: ["#ee3333", "#e64980", "#fd7e14", "#fab005"],
+    cool: ["#228be6", "#3333ee", "#40c057", "#00aa00"],
+    accent: ["#be4bdb", "#893200", "#ff6b6b", "#4ecdc4"]
+};
+
+// Default drawing settings
+const DRAWING_DEFAULTS = {
+    brushSize: 3,
+    color: "#ffffff",
+    backgroundColor: "#000000",
+    minBrushSize: 1,
+    maxBrushSize: 50,
+    undoLimit: 50,
+};
+
+// Keyboard shortcuts
+const SHORTCUTS = {
+    undo: "Ctrl+Z",
+    redo: "Ctrl+Y",
+    reset: "Ctrl+R",
+    calculate: "Enter",
+    toggleEraser: "E",
+};
   
-export { SWATCHES };
+export { SWATCHES, COLOR_CATEGORIES, DRAWING_DEFAULTS, SHORTCUTS };

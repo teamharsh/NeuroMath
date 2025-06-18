@@ -1,6 +1,7 @@
 import {createBrowserRouter, RouterProvider} from 'react-router-dom';
 import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
+import { ToastProvider } from '@/components/ui/toast';
 
 import Home from '@/screens/home';
 
@@ -20,7 +21,9 @@ const BrowserRouter = createBrowserRouter(paths);
 const App = () => {
     return (
     <MantineProvider>
-      <RouterProvider router={BrowserRouter}/>
+      <ToastProvider>
+        <RouterProvider router={BrowserRouter}/>
+      </ToastProvider>
     </MantineProvider>
     )
 };
