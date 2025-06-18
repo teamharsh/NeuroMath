@@ -5,6 +5,9 @@
   "license": "ISC",
   "author": "Harsh Kumar",
   "type": "commonjs",
+  "engines": {
+    "node": "20.x"
+  },
   "main": "app.js",
   "scripts": {
     "dev": "nodemon src/app.js",
