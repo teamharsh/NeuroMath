@@ -21,9 +21,11 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
     'Draw mathematical expressions clearly with good spacing',
     'Use different brush sizes for better clarity',
     'The eraser tool helps make corrections',
+    'Enable Step-by-Step mode for detailed solution breakdowns',
     'Results can be dragged around the screen',
     'Copy results to clipboard using the copy button',
     'The app supports basic arithmetic, algebra, and calculus',
+    'Step-by-Step mode shows intermediate steps for complex problems',
   ];
 
   React.useEffect(() => {
@@ -145,6 +147,42 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                   <span className="text-gray-300 text-sm">{tip}</span>
                 </div>
               ))}
+            </div>
+          </section>
+
+          {/* Step-by-Step Mode */}
+          <section>
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2z"/>
+              </svg>
+              Step-by-Step Mode
+            </h3>
+            <div className="bg-black/30 rounded-lg p-4 space-y-3">
+              <p className="text-gray-300 text-sm leading-relaxed">
+                <strong className="text-white">Enable Step-by-Step mode</strong> to see detailed solutions for complex mathematical problems including:
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 ml-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-purple-400 rounded-full"></div>
+                  <span className="text-gray-300 text-sm">Calculus (derivatives, integrals)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
+                  <span className="text-gray-300 text-sm">Algebraic equation solving</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+                  <span className="text-gray-300 text-sm">Factoring and expansion</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
+                  <span className="text-gray-300 text-sm">Systems of equations</span>
+                </div>
+              </div>
+              <p className="text-gray-300 text-sm leading-relaxed">
+                Solutions appear as draggable windows with animated step progression and detailed explanations.
+              </p>
             </div>
           </section>
 

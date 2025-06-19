@@ -2,10 +2,18 @@ import React from 'react';
 import Draggable from 'react-draggable';
 import { injectResultDisplayStyles } from './result-display-styles';
 
+interface Step {
+  description: string;
+  expression: string;
+}
+
 interface ResultDisplayProps {
   results: Array<{
     expr: string;
     result: string;
+    problem_type?: string;
+    steps?: Step[];
+    method?: string;
   }>;
   position: { x: number; y: number };
   onPositionChange: (position: { x: number; y: number }) => void;

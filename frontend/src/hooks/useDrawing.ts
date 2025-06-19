@@ -134,9 +134,13 @@ export const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Set canvas size only if it hasn't been set or window resized
-    const newWidth = window.innerWidth;
-    const newHeight = window.innerHeight - 80; // Account for toolbar
+    // Get the actual container size instead of window size
+    const container = canvas.parentElement;
+    if (!container) return;
+    
+    const containerRect = container.getBoundingClientRect();
+    const newWidth = containerRect.width;
+    const newHeight = containerRect.height;
     
     if (canvas.width !== newWidth || canvas.height !== newHeight || !isInitialized.current) {
       // Save current drawing before resizing (only if already initialized)
@@ -203,10 +207,10 @@ export const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     const rect = canvas.getBoundingClientRect();
     const x = "touches" in e
       ? e.touches[0].clientX - rect.left
-      : (e as React.MouseEvent).nativeEvent.offsetX;
+      : e.clientX - rect.left;
     const y = "touches" in e
       ? e.touches[0].clientY - rect.top
-      : (e as React.MouseEvent).nativeEvent.offsetY;
+      : e.clientY - rect.top;
 
     ctx.moveTo(x, y);
     return { x, y };
@@ -236,10 +240,10 @@ export const useDrawing = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     const rect = canvas.getBoundingClientRect();
     const x = "touches" in e
       ? e.touches[0].clientX - rect.left
-      : (e as React.MouseEvent).nativeEvent.offsetX;
+      : e.clientX - rect.left;
     const y = "touches" in e
       ? e.touches[0].clientY - rect.top
-      : (e as React.MouseEvent).nativeEvent.offsetY;
+      : e.clientY - rect.top;
 
     ctx.lineTo(x, y);
     ctx.stroke();

@@ -13,6 +13,7 @@ interface ToolbarProps {
   onEraserToggle: () => void;
   onHelpToggle: () => void;
   onSidebarToggle?: () => void;
+  onStepModeToggle?: () => void;
   currentColor: string;
   currentBrushSize: number;
   isEraser: boolean;
@@ -20,6 +21,7 @@ interface ToolbarProps {
   canUndo: boolean;
   canRedo: boolean;
   sidebarVisible?: boolean;
+  stepModeEnabled?: boolean;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({
@@ -32,6 +34,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onEraserToggle,
   onHelpToggle,
   onSidebarToggle,
+  onStepModeToggle,
   currentColor,
   currentBrushSize,
   isEraser,
@@ -39,6 +42,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   canUndo,
   canRedo,
   sidebarVisible = false,
+  stepModeEnabled = false,
 }) => {
   const [showColorPalette, setShowColorPalette] = React.useState(false);
   const [showBrushSizes, setShowBrushSizes] = React.useState(false);
@@ -208,6 +212,22 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 
             {/* Right Section - Calculate & Help */}
             <div className="flex items-center gap-2">
+              {onStepModeToggle && (
+                <Button
+                  onClick={onStepModeToggle}
+                  variant={stepModeEnabled ? "default" : "tool"}
+                  size="sm"
+                  title={stepModeEnabled ? "Disable Step-by-Step Mode" : "Enable Step-by-Step Mode"}
+                  className="min-w-[100px]"
+                >
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-1 9H9V9h10v2zm-4 4H9v-2h6v2z"/>
+                    </svg>
+                    <span>Steps</span>
+                  </div>
+                </Button>
+              )}
               {onSidebarToggle && (
                 <Button
                   onClick={onSidebarToggle}
