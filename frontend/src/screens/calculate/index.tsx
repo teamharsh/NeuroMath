@@ -425,7 +425,7 @@ export default function Calculate() {
 
       <div className="flex h-screen relative overflow-hidden pt-16 sm:pt-20">
         {/* Main Drawing Area */}
-        <div className="flex-1 flex flex-col h-full">
+        <div className={`flex-1 flex flex-col h-full transition-all duration-300 ${showResults ? 'sm:mr-80 md:mr-96' : ''}`}>
           {/* Drawing Tools */}
           <div className="bg-black/20 backdrop-blur-sm border-b border-white/10 p-2 sm:p-4 relative z-20">
             <div className="flex items-center justify-between w-full">
@@ -616,7 +616,7 @@ export default function Calculate() {
         </div>
 
         {/* Results Sidebar */}
-        <div className={`fixed top-16 sm:top-20 right-0 h-[calc(100vh-4rem)] sm:h-[calc(100vh-5rem)] w-full sm:w-80 md:w-96 bg-black/90 backdrop-blur-xl border-l border-white/20 flex flex-col transform transition-transform duration-300 ease-in-out z-40 shadow-2xl ${showResults ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className={`fixed top-16 sm:top-20 right-0 h-[calc(100vh-4rem)] sm:h-[calc(100vh-5rem)] w-11/12 sm:w-80 md:w-96 bg-black/90 backdrop-blur-xl border-l border-white/20 flex flex-col transform transition-transform duration-300 ease-in-out z-40 shadow-2xl ${showResults ? 'translate-x-0' : 'translate-x-full'}`}>
             {/* Results Header */}
             <div className="p-4 sm:p-6 border-b border-white/10">
               <div className="flex items-center justify-between mb-2 sm:mb-4">
